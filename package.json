@@ -1,0 +1,20 @@
+{
+  "name": "net-mahjong",
+  "version": "1.0.0",
+  "description": "브라우저로 즐기는 온라인 4인 리치마작 (GitHub Pages + PeerJS P2P)",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build": "esbuild src/main.js --bundle --minify --format=iife --outfile=dist/app.js",
+    "test": "node test/headless.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@kobalab/majiang-core": "^1.4.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0",
+    "peerjs": "^1.5.5",
+    "playwright": "^1.60.0"
+  }
+}

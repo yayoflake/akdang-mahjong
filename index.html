@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>넷마작 — 온라인 리치마작</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="assets/tiles/Chun.svg">
+</head>
+<body>
+
+<!-- 홈 화면 -->
+<div id="screen-home" class="screen active">
+  <div class="panel">
+    <h1>🀄 넷마작</h1>
+    <p class="subtitle">브라우저로 즐기는 온라인 4인 리치마작</p>
+
+    <label class="field">
+      <span>닉네임</span>
+      <input id="input-name" type="text" maxlength="12" placeholder="플레이어">
+    </label>
+
+    <label class="field">
+      <span>대국 길이</span>
+      <select id="select-length">
+        <option value="1">동풍전 (동 1~4국)</option>
+        <option value="2" selected>반장전 (동·남 1~4국)</option>
+      </select>
+    </label>
+
+    <button id="btn-create" class="big primary">방 만들기</button>
+
+    <div class="join-row">
+      <input id="input-code" type="text" maxlength="6" placeholder="방 코드 (예: ABC123)">
+      <button id="btn-join" class="big">참가</button>
+    </div>
+
+    <button id="btn-solo" class="big">연습 대국 (AI 3인)</button>
+
+    <p class="note">
+      방장이 방을 만들고 코드를 공유하면 친구가 참가할 수 있습니다.<br>
+      사람이 부족하면 빈 자리는 쯔모기리 AI가 채웁니다.
+    </p>
+  </div>
+</div>
+
+<!-- 방(로비) 화면 -->
+<div id="screen-room" class="screen">
+  <div class="panel">
+    <h2>대기실</h2>
+    <div class="room-code-box">
+      <span>방 코드</span>
+      <strong id="room-code">......</strong>
+      <button id="room-link" class="linkish"></button>
+    </div>
+    <div id="room-status"></div>
+    <div id="room-players"></div>
+    <div id="room-wait" class="note"></div>
+    <div class="room-buttons">
+      <button id="btn-add-ai" class="big">🤖 AI 추가</button>
+      <button id="btn-start" class="big primary">대국 시작</button>
+      <button id="btn-leave-room" class="big">나가기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 게임 화면 -->
+<div id="screen-game" class="screen">
+  <div id="game-topbar">
+    <span id="game-room-label"></span>
+    <button id="btn-leave-game">나가기</button>
+  </div>
+  <div id="game-root"></div>
+</div>
+
+<footer id="credit">
+  타일 이미지: <a href="https://github.com/FluffyStuff/riichi-mahjong-tiles" target="_blank" rel="noopener">FluffyStuff/riichi-mahjong-tiles</a> (CC BY 4.0)
+  · 마작 엔진: <a href="https://github.com/kobalab/majiang-core" target="_blank" rel="noopener">@kobalab/majiang-core</a>
+</footer>
+
+<script src="vendor/peerjs.min.js"></script>
+<script src="dist/app.js"></script>
+</body>
+</html>
