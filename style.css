@@ -70,6 +70,12 @@ button.big {
 button.big:hover { background: #3a4767; }
 button.big.primary { background: #2c7a4f; border-color: #3a9a66; }
 button.big.primary:hover { background: #339059; }
+button.big:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+button.big:disabled:hover { background: #2e3850; }
+button.big.primary:disabled:hover { background: #2c7a4f; }
 
 .join-row { display: flex; gap: 8px; margin: 10px 0; }
 .join-row input { flex: 1; text-transform: uppercase; }

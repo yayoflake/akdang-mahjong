@@ -179,12 +179,7 @@ class HostRoom {
 
     startGame() {
         if (this.playing) return;
-        // 빈 자리는 AI로 채움
-        for (let i = 0; i < 4; i++) {
-            if (this.slots[i].kind == 'empty') {
-                this.slots[i] = { kind: 'ai', name: `AI ${++this.aiCount}호` };
-            }
-        }
+        if (this.slots.some(s => s.kind == 'empty')) return;   // 4자리 충원 필수
         this.playing = true;
         this.slots[0].name = myName();
         this.broadcastLobby();
@@ -351,31 +346,6 @@ class GuestRoom {
     }
 }
 
-/* ---------- 솔로 (연습) ---------- */
-
-function startSolo() {
-    const session = new GameSession({
-        label: '연습 대국',
-        onEnd: () => { app.soloGame = null; show('home'); },
-        onLeave: () => {
-            if (!confirm('연습 대국을 그만두시겠습니까?')) return;
-            if (app.soloGame) app.soloGame.stop();
-            app.soloGame = null;
-            session.destroy();
-            show('home');
-        },
-    });
-    const names = [myName(), 'AI 1호', 'AI 2호', 'AI 3호'];
-    const players = [session.player,
-                     new TsumogiriAI(), new TsumogiriAI(), new TsumogiriAI()];
-    const rule = Majiang.rule({ '場数': +$('select-length').value });
-    const game = new Majiang.Game(players, () => {}, rule, '넷마작 연습');
-    game._model.player = names;
-    game.speed = 2;
-    game.kaiju();
-    app.soloGame = game;
-}
-
 /* ---------- 방 화면 렌더링 ---------- */
 
 function renderRoomScreen(lobby, handlers) {
@@ -417,9 +387,12 @@ function renderRoomScreen(lobby, handlers) {
     $('btn-add-ai').style.display = handlers.isHost ? '' : 'none';
     $('btn-start').style.display = handlers.isHost ? '' : 'none';
     if (handlers.isHost) {
+        const full = slots.length == 4 && slots.every(s => s.kind != 'empty');
         $('btn-add-ai').onclick = handlers.onAddAI;
         $('btn-start').onclick = handlers.onStart;
-        $('room-wait').textContent = '';
+        $('btn-start').disabled = !full;
+        $('room-wait').textContent =
+            full ? '' : '네 자리가 모두 차야 시작할 수 있습니다. 빈 자리는 AI로 채울 수 있습니다.';
     }
     else {
         $('room-wait').textContent = '방장이 시작하기를 기다리는 중...';
@@ -429,7 +402,7 @@ function renderRoomScreen(lobby, handlers) {
 
 /* ---------- 초기화 ---------- */
 
-const app = { room: null, soloGame: null };
+const app = { room: null };
 
 function init() {
     $('input-name').value = localStorage.getItem('nm-name') || '';
@@ -453,10 +426,9 @@ function init() {
     $('input-code').addEventListener('keydown', e => {
         if (e.key == 'Enter') $('btn-join').click();
     });
-    $('btn-solo').onclick = () => startSolo();
 
     window.addEventListener('beforeunload', e => {
-        if ((app.room && (app.room.playing || app.room.session)) || app.soloGame) {
+        if (app.room && (app.room.playing || app.room.session)) {
             e.preventDefault();
             e.returnValue = '';
         }

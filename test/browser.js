@@ -98,22 +98,34 @@ async function playFor(pages, ms) {
     const browser = await chromium.launch();
     const errors = [];
 
-    /* ---------- A. 솔로 모드 ---------- */
-    console.log('[A] 솔로(연습) 모드');
+    /* ---------- A. 호스트 단독 + AI 3인 ---------- */
+    console.log('[A] 호스트 단독 + AI 3인');
     {
         const page = await browser.newPage({ viewport: { width: 1280, height: 860 } });
-        watchErrors(page, 'solo', errors);
+        watchErrors(page, 'host-ai', errors);
         await page.goto(`http://localhost:${PORT}/`);
         await page.screenshot({ path: path.join(SHOTS, 'home.png') });
 
         await page.fill('#input-name', '스모크봇');
-        await page.click('#btn-solo');
+        await page.click('#btn-create');
+        await page.waitForFunction(
+            () => /^[A-Z0-9]{6}$/.test(document.getElementById('room-code').textContent),
+            null, { timeout: 30000 });
+
+        // 자리가 차기 전에는 시작 버튼이 비활성화되어야 함
+        assert(await page.locator('#btn-start').isDisabled(),
+               '자리 미충원 시 시작 버튼 비활성화');
+        for (let i = 0; i < 3; i++) await page.click('#btn-add-ai');
+        assert(!await page.locator('#btn-start').isDisabled(),
+               '4자리 충원 후 시작 버튼 활성화');
+
+        await page.click('#btn-start');
         await page.waitForSelector('#screen-game.active', { timeout: 5000 });
         await page.waitForSelector('.hand.mine .tile', { timeout: 10000 });
         assert(true, '게임 화면 진입 + 손패 렌더링');
 
         await playFor([page], 45000);
-        await page.screenshot({ path: path.join(SHOTS, 'solo-game.png') });
+        await page.screenshot({ path: path.join(SHOTS, 'ai-game.png') });
 
         const riverTiles = await page.locator('.river .tile').count();
         assert(riverTiles >= 10, `버림패가 쌓여야 함 (${riverTiles}장)`);
@@ -154,6 +166,12 @@ async function playFor(pages, ms) {
         await pageH.waitForFunction(
             () => document.querySelectorAll('#room-players .slot.guest').length >= 1,
             null, { timeout: 10000 });
+
+        // 호스트+게스트만으로는 시작 불가 → AI 2인 추가
+        assert(await pageH.locator('#btn-start').isDisabled(),
+               '2인만으로는 시작 버튼 비활성화');
+        await pageH.click('#btn-add-ai');
+        await pageH.click('#btn-add-ai');
 
         await pageH.click('#btn-start');
         await pageH.waitForSelector('#screen-game.active', { timeout: 10000 });

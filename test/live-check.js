@@ -17,15 +17,7 @@ const URL = process.argv[2] || 'https://yayoflake.github.io/akdang-mahjong/';
     await page.goto(URL, { waitUntil: 'networkidle' });
     console.log('타이틀:', await page.title());
 
-    // 솔로 대국 진입
-    await page.fill('#input-name', '라이브체크');
-    await page.click('#btn-solo');
-    await page.waitForSelector('#screen-game.active', { timeout: 10000 });
-    await page.waitForSelector('.hand.mine .tile img', { timeout: 10000 });
-    console.log('ok: 게임 진입 + 타일 SVG 로드');
-
-    // 방 생성 (PeerJS 연결 확인)
-    await page.goto(URL, { waitUntil: 'networkidle' });
+    // 방 생성 (PeerJS 연결 확인) → AI 충원 → 대국 진입
     await page.fill('#input-name', '라이브체크');
     await page.click('#btn-create');
     await page.waitForFunction(
@@ -33,6 +25,12 @@ const URL = process.argv[2] || 'https://yayoflake.github.io/akdang-mahjong/';
         null, { timeout: 30000 });
     console.log('ok: 방 생성 (PeerJS 연결, 코드 ' +
                 await page.locator('#room-code').textContent() + ')');
+
+    for (let i = 0; i < 3; i++) await page.click('#btn-add-ai');
+    await page.click('#btn-start');
+    await page.waitForSelector('#screen-game.active', { timeout: 10000 });
+    await page.waitForSelector('.hand.mine .tile img', { timeout: 10000 });
+    console.log('ok: AI 충원 → 대국 진입 + 타일 SVG 로드');
 
     await browser.close();
     if (errors.length) {
