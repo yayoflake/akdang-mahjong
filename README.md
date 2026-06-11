@@ -1,5 +1,7 @@
 # 🀄 넷마작 — 브라우저 온라인 리치마작
 
+▶ **플레이: https://yayoflake.github.io/akdang-mahjong/**
+
 서버 없이 **GitHub Pages 정적 호스팅만으로** 동작하는 온라인 4인 리치마작 게임입니다.
 방장의 브라우저가 게임 마스터 역할을 하고, 참가자는 PeerJS(WebRTC P2P)로 연결됩니다.
 
@@ -28,15 +30,14 @@
 
 ## GitHub Pages 배포
 
-이 저장소를 GitHub에 올리기만 하면 됩니다 (빌드 산출물 `dist/app.js` 포함).
+GitHub Pages는 `gh-pages` 브랜치(루트)에서 서빙됩니다. 빌드 산출물 `dist/app.js`가
+저장소에 포함되어 있으므로, 변경 후에는 빌드하고 두 브랜치에 푸시하면 끝입니다.
 
 ```bash
-git remote add origin https://github.com/<계정>/<저장소>.git
-git push -u origin main
+npm run build
+git push origin main           # 소스
+git push origin main:gh-pages  # 배포 (Pages 서빙 브랜치)
 ```
-
-GitHub 저장소 → **Settings → Pages → Source: Deploy from a branch → `main` / `/ (root)`** 선택.
-잠시 후 `https://<계정>.github.io/<저장소>/` 에서 플레이할 수 있습니다.
 
 ## 개발
 
