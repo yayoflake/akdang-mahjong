@@ -93,4 +93,15 @@ function rankLabel(hule) {
     return '';
 }
 
-module.exports = { yakuName, pingjuName, rankLabel, FENG_KO };
+// 결과창 점수 표기 문자열.
+//   - 1~4판: "4판 30부 7700점" (판을 부보다 먼저)
+//   - 만관 이상: 등급명만 + 점수 ("만관 8000점", "역만 32000점")
+function scoreText(hule) {
+    const label = rankLabel(hule);
+    const head = label ? label
+               : hule.fanshu ? `${hule.fanshu}판 ${hule.fu}부`
+               : '';
+    return (head ? head + ' ' : '') + `${hule.defen}점`;
+}
+
+module.exports = { yakuName, pingjuName, rankLabel, scoreText, FENG_KO };

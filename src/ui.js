@@ -7,7 +7,7 @@
 
 const Majiang = require('@kobalab/majiang-core');
 const { tileEl, fulouEl, paiList } = require('./tiles');
-const { yakuName, pingjuName, rankLabel } = require('./yaku');
+const { yakuName, pingjuName, scoreText } = require('./yaku');
 
 const WINDS = ['동', '남', '서', '북'];
 
@@ -31,6 +31,7 @@ module.exports = class GameUI {
         this._player = null;
         this._respond = null;
         this._timers = [];
+        this._lastDapai = null;   // 콜 판단 대상이 되는 "방금 버려진 패"
         this._build();
     }
 
@@ -90,6 +91,10 @@ module.exports = class GameUI {
     redrawAll() { this._render(); }
 
     update(kind, data) {
+        // 방금 버려진 패만 강조 대상으로 추적. 다음 동작(쯔모/후로/화료 등)이
+        // 오면 해제되어, 콜을 받을 수 있는 패만 강조된다.
+        this._lastDapai = kind == 'dapai' ? { l: data.l } : null;
+
         if (kind == 'dapai' && data.p.indexOf('*') >= 0)
             this._toast(this._rel(data.l), '리치!');
         if (kind == 'fulou') {
@@ -120,10 +125,12 @@ module.exports = class GameUI {
             `남은 패 ${model.shan.paishu}` +
             (model.lizhibang ? ` · 공탁 ${model.lizhibang}` : '');
 
-        // 도라 표시패
+        // 도라 표시패 (왕패 형태: 공개된 표시패 + 뒷면으로 5칸 채움)
         this._doraRow.innerHTML = '';
-        for (const p of model.shan.baopai) {
-            this._doraRow.appendChild(tileEl(p, 'small'));
+        const baopai = model.shan.baopai;
+        for (let i = 0; i < 5; i++) {
+            this._doraRow.appendChild(
+                tileEl(i < baopai.length ? baopai[i] : '_', 'small'));
         }
 
         // 좌석별
@@ -149,6 +156,7 @@ module.exports = class GameUI {
 
             // 버림패 (불려간 패는 제외)
             seat.river.innerHTML = '';
+            let lastTile = null;
             for (const p of model.he[l]._pai) {
                 if (/[+=\-]$/.test(p)) continue;
                 const riichi = p.indexOf('*') >= 0;
@@ -161,6 +169,11 @@ module.exports = class GameUI {
                     seat.river.appendChild(wrap);
                 }
                 else seat.river.appendChild(t);
+                lastTile = t;
+            }
+            // 방금 버려진 패 강조 (콜 판단용)
+            if (this._lastDapai && this._lastDapai.l == l && lastTile) {
+                lastTile.classList.add('last-dapai');
             }
 
             // 부로
@@ -411,8 +424,10 @@ module.exports = class GameUI {
         const handRow = el('div', 'dlg-hand', box);
         const shoupai = Majiang.Shoupai.fromString(hule.shoupai);
         for (const p of paiList(shoupai)) handRow.appendChild(tileEl(p, 'small'));
+        // 화료패(쯔모/론)를 손에서 떼어 표시 — 론패는 상대에게서 가져온 것이라 구분
         if (shoupai._zimo && shoupai._zimo.length <= 2) {
-            handRow.appendChild(tileEl(shoupai._zimo, 'small zimo'));
+            const winCls = hule.baojia == null ? 'small win zimo' : 'small win ron';
+            handRow.appendChild(tileEl(shoupai._zimo, winCls));
         }
         for (const m of shoupai._fulou) {
             const f = fulouEl(m);
@@ -422,10 +437,10 @@ module.exports = class GameUI {
 
         // 도라 표시패
         const doraRow = el('div', 'dlg-dora', box);
-        el('span', null, doraRow, '도라 ');
+        el('span', null, doraRow, '도라 표시패 ');
         for (const p of model.shan.baopai) doraRow.appendChild(tileEl(p, 'small'));
         if (hule.fubaopai) {
-            el('span', null, doraRow, ' 뒷도라 ');
+            el('span', null, doraRow, ' 뒷도라 표시패 ');
             for (const p of hule.fubaopai) doraRow.appendChild(tileEl(p, 'small'));
         }
 
@@ -441,12 +456,8 @@ module.exports = class GameUI {
                : h.fanshu);
         }
 
-        // 점수
-        let scoreText = '';
-        if (hule.fanshu) scoreText = `${hule.fu}부 ${hule.fanshu}판 `;
-        const label = rankLabel(hule);
-        scoreText += (label ? label + ' ' : '') + `${hule.defen}점`;
-        el('div', 'dlg-score', box, scoreText);
+        // 점수 (판 → 부 순서. 만관 이상은 등급명만 표시하고 부는 생략)
+        el('div', 'dlg-score', box, scoreText(hule));
 
         // 점수 이동
         const fenpeiBox = el('div', 'dlg-fenpei', box);

@@ -253,6 +253,13 @@ button.linkish {
     pointer-events: none;
 }
 .river .rot-wrap { width: calc(var(--tw) * 1.333); }
+/* 방금 버려진 패 — 콜 판단 대상 강조 */
+.river .tile.last-dapai {
+    outline: calc(var(--u) * 0.35) solid #ffd76a;
+    outline-offset: calc(var(--u) * -0.2);
+    box-shadow: 0 0 calc(var(--u) * 0.8) #ffd76a;
+    z-index: 3;
+}
 
 /* ----- 부로 ----- */
 
@@ -413,7 +420,9 @@ button.act.meld-pick .fulou { pointer-events: none; }
 
 .dlg-title { font-size: calc(var(--u) * 2.8); font-weight: 800; text-align: center; margin-bottom: calc(var(--u)*1.5); }
 .dlg-hand { --tw: calc(var(--u) * 3.2); display: flex; flex-wrap: wrap; gap: 1px; justify-content: center; margin-bottom: calc(var(--u)*1.2); align-items: flex-end; }
-.dlg-hand .tile.zimo { margin-left: calc(var(--u)*0.8); }
+.dlg-hand .tile.win { margin-left: calc(var(--u)*0.8); }
+.dlg-hand .tile.win.zimo { box-shadow: 0 0 calc(var(--u)*0.7) #7fd98a; }   /* 쯔모패 */
+.dlg-hand .tile.win.ron  { box-shadow: 0 0 calc(var(--u)*0.7) #e8a05a; }   /* 론패(상대에게서) */
 .dlg-hand .fulou { margin-left: calc(var(--u)*0.8); }
 .dlg-hand.inline { display: inline-flex; margin: 0 0 0 8px; vertical-align: middle; }
 .dlg-dora { --tw: calc(var(--u) * 2.4); display: flex; align-items: center; gap: 3px; justify-content: center; color: #9aa5bd; font-size: calc(var(--u)*1.6); margin-bottom: calc(var(--u)*1.2); }

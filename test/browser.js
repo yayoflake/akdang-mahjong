@@ -126,6 +126,10 @@ async function playFor(pages, ms) {
 
         await playFor([page], 45000);
         await page.screenshot({ path: path.join(SHOTS, 'ai-game.png') });
+        await page.locator('.center').screenshot({ path: path.join(SHOTS, 'center-dora.png') });
+
+        const doraTiles = await page.locator('.dora-row .tile').count();
+        assert(doraTiles === 5, `도라는 왕패 5칸으로 표시되어야 함 (${doraTiles}칸)`);
 
         const riverTiles = await page.locator('.river .tile').count();
         assert(riverTiles >= 10, `버림패가 쌓여야 함 (${riverTiles}장)`);
