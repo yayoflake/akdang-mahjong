@@ -227,9 +227,10 @@ module.exports = class GameUI {
     }
 
     /*
-     * 손패 클릭 활성화.
+     * 손패 타패 입력 활성화 (작혼 방식).
+     *   - PC(마우스): 마우스오버로 패가 떠오르며 강조(CSS) → 클릭 한 번에 타패.
+     *   - 모바일(터치/펜): 첫 탭에 패가 떠오르며 강조 → 같은 패를 다시 탭하면 타패.
      * allowed: 합법 타패 목록(['m5','p3','m5_' ...]) 또는 null(비활성).
-     * onPick(reply문자열) — 두 번 클릭(선택→확정) 방식.
      */
     _setHandClickable(allowed, onPick, suffix = '') {
         const seat = this._seats[0];
@@ -241,20 +242,22 @@ module.exports = class GameUI {
             if (allowed) {
                 if (isZimo && allowed.indexOf(p + '_') >= 0) reply = p + '_';
                 else if (allowed.indexOf(p) >= 0) reply = p;
-                else if (isZimo && allowed.indexOf(p) >= 0) reply = p;
             }
             t.classList.toggle('clickable', !!reply);
             t.classList.remove('selected');
-            t.onclick = null;
+            t.onpointerup = null;
             if (reply) {
-                t.onclick = () => {
-                    if (selected == t) {
-                        onPick(reply + suffix);
+                t.onpointerup = e => {
+                    if (e.pointerType === 'mouse') {
+                        onPick(reply + suffix);          // PC: 즉시 타패
+                    }
+                    else if (selected === t) {
+                        onPick(reply + suffix);          // 모바일: 재탭 → 타패
                     }
                     else {
                         if (selected) selected.classList.remove('selected');
                         selected = t;
-                        t.classList.add('selected');
+                        t.classList.add('selected');     // 모바일: 첫 탭 → 강조
                     }
                 };
             }
@@ -276,7 +279,7 @@ module.exports = class GameUI {
 
         const showBase = () => {
             this._clearActions();
-            this._handHint.textContent = choice.lizhied ? '' : '버릴 패를 두 번 클릭하세요';
+            this._handHint.textContent = choice.lizhied ? '' : '버릴 패를 선택하세요';
 
             if (!choice.lizhied) {
                 this._setHandClickable(choice.dapai,
@@ -295,7 +298,7 @@ module.exports = class GameUI {
             if (choice.lizhi) {
                 this._button('리치', 'riichi', () => {
                     this._clearActions();
-                    this._handHint.textContent = '리치 — 버릴 패를 두 번 클릭하세요';
+                    this._handHint.textContent = '리치 — 버릴 패를 선택하세요';
                     // 주의: 쯔모기리 표기('m5_')의 '_'를 제거하면 안 된다.
                     // 그 패가 손에 한 장뿐이면 'm5'는 합법 타패 목록에 없다.
                     this._setHandClickable(choice.lizhi,

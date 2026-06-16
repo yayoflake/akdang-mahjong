@@ -76,8 +76,8 @@ async function botStep(page) {
         const tiles = page.locator('.hand.mine .tile.clickable');
         const n = await tiles.count();
         if (n) {
+            // PC(마우스) 입력은 클릭 한 번에 즉시 타패된다.
             const t = tiles.nth(Math.floor(Math.random() * n));
-            await t.click({ timeout: 500 });
             await t.click({ timeout: 500 });
         }
     }
@@ -197,6 +197,60 @@ async function playFor(pages, ms) {
 
         await ctxH.close();
         await ctxG.close();
+    }
+
+    /* ---------- C. 모바일 터치 타패 (첫 탭 강조 → 재탭 타패) ---------- */
+    console.log('[C] 모바일 터치 입력 (첫 탭 강조 → 재탭 타패)');
+    {
+        const ctx = await browser.newContext({
+            viewport: { width: 420, height: 880 }, hasTouch: true, isMobile: true,
+        });
+        const page = await ctx.newPage();
+        watchErrors(page, 'touch', errors);
+        await page.goto(`http://localhost:${PORT}/`);
+        await page.fill('#input-name', '터치봇');
+        await page.click('#btn-create');
+        await page.waitForFunction(
+            () => /^[A-Z0-9]{6}$/.test(document.getElementById('room-code').textContent),
+            null, { timeout: 30000 });
+        for (let i = 0; i < 3; i++) await page.click('#btn-add-ai');
+        await page.click('#btn-start');
+        await page.waitForSelector('#screen-game.active', { timeout: 10000 });
+
+        let verified = false;
+        const deadline = Date.now() + 40000;
+        while (Date.now() < deadline && !verified) {
+            try {
+                const modalBtn = page.locator('.modal:not(.hidden) button.act').first();
+                if (await modalBtn.count()) { await modalBtn.click({ timeout: 500 }); continue; }
+
+                const clickable = page.locator('.hand.mine .tile.clickable');
+                if (await clickable.count() > 0) {
+                    const before = await page.locator('.sw0 .river .tile').count();
+                    const t = clickable.first();
+                    await t.tap();
+                    await page.waitForTimeout(150);
+                    assert(await page.locator('.hand.mine .tile.selected').count() >= 1,
+                           '첫 탭에 패가 강조됨(selected)');
+                    assert(await page.locator('.sw0 .river .tile').count() === before,
+                           '첫 탭만으로는 타패되지 않음');
+                    await t.tap();
+                    await page.waitForFunction(
+                        b => document.querySelectorAll('.sw0 .river .tile').length > b,
+                        before, { timeout: 5000 });
+                    assert(true, '같은 패 재탭으로 타패 완료');
+                    verified = true;
+                    break;
+                }
+                // 타패 차례가 아니면(남의 패 반응 등) 패스로 흘려보낸다
+                const pass = page.locator('.action-bar button.act.pass').first();
+                if (await pass.count()) await pass.click({ timeout: 500 });
+            }
+            catch (e) { /* 렌더 경합 → 재시도 */ }
+            await page.waitForTimeout(200);
+        }
+        assert(verified, '터치 타패 시퀀스 검증');
+        await ctx.close();
     }
 
     await browser.close();

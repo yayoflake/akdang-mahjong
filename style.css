@@ -185,7 +185,14 @@ button.linkish {
 .tile.tsumogiri { filter: brightness(.8); }
 
 .tile.clickable { cursor: pointer; }
-.tile.clickable:hover { transform: translateY(calc(var(--tw) * -0.12)); }
+/* PC: 마우스오버 시 패가 살짝 떠오르며 강조 (터치 기기의 hover 잔상 방지를 위해 한정) */
+@media (hover: hover) and (pointer: fine) {
+    .tile.clickable:hover {
+        transform: translateY(calc(var(--tw) * -0.18));
+        box-shadow: 0 0 calc(var(--tw)*0.3) #ffd76a;
+    }
+}
+/* 모바일: 첫 탭으로 선택된 패 강조 (더 크게 떠오름) */
 .tile.selected {
     transform: translateY(calc(var(--tw) * -0.25)) !important;
     box-shadow: 0 0 calc(var(--tw)*0.35) #ffd76a;
