@@ -50,19 +50,21 @@ console.log('[1] 점수 계산 스모크 테스트');
     assert(hule.hupai.some(h => h.name == '赤ドラ'),
            '적도라가 계산되어야 함: ' + JSON.stringify(hule.hupai));
 
-    // 결과창 점수 표기: 판이 부보다 먼저, 만관 이상은 등급명만
+    // 결과창 점수 표기: 판→부 순서, 만관 이상은 등급명 덧붙임, 역만만 부/판 생략
     assert(scoreText({ fu: 30, fanshu: 1, defen: 1000 }) == '1판 30부 1000점',
            '1판 표기: ' + scoreText({ fu: 30, fanshu: 1, defen: 1000 }));
     assert(scoreText({ fu: 40, fanshu: 3, defen: 5200 }) == '3판 40부 5200점',
            '3판 표기: ' + scoreText({ fu: 40, fanshu: 3, defen: 5200 }));
-    assert(scoreText({ fu: 30, fanshu: 5, defen: 8000 }) == '만관 8000점',
-           '만관 표기(부 생략): ' + scoreText({ fu: 30, fanshu: 5, defen: 8000 }));
-    assert(scoreText({ fanshu: 6, fu: 30, defen: 12000 }) == '하네만 12000점',
-           '하네만 표기: ' + scoreText({ fanshu: 6, fu: 30, defen: 12000 }));
+    assert(scoreText({ fu: 30, fanshu: 5, defen: 8000 }) == '5판 30부 만관 8000점',
+           '만관 표기(부/판 병기): ' + scoreText({ fu: 30, fanshu: 5, defen: 8000 }));
+    assert(scoreText({ fanshu: 7, fu: 40, defen: 12000 }) == '7판 40부 하네만 12000점',
+           '하네만 표기(부/판 병기): ' + scoreText({ fanshu: 7, fu: 40, defen: 12000 }));
+    assert(scoreText({ fanshu: 13, fu: 40, defen: 32000 }) == '13판 40부 헤아림 역만 32000점',
+           '헤아림 역만 표기(부/판 병기): ' + scoreText({ fanshu: 13, fu: 40, defen: 32000 }));
     assert(scoreText({ damanguan: 1, defen: 32000 }) == '역만 32000점',
-           '역만 표기: ' + scoreText({ damanguan: 1, defen: 32000 }));
+           '역만 표기(부/판 생략): ' + scoreText({ damanguan: 1, defen: 32000 }));
     assert(scoreText({ damanguan: 2, defen: 64000 }) == '2배 역만 64000점',
-           '더블 역만 표기: ' + scoreText({ damanguan: 2, defen: 64000 }));
+           '더블 역만 표기(부/판 생략): ' + scoreText({ damanguan: 2, defen: 64000 }));
 }
 
 /* ---------- 공용: 대국 실행 + 불변량 검사 ---------- */

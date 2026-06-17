@@ -94,14 +94,18 @@ function rankLabel(hule) {
 }
 
 // 결과창 점수 표기 문자열.
-//   - 1~4판: "4판 30부 7700점" (판을 부보다 먼저)
-//   - 만관 이상: 등급명만 + 점수 ("만관 8000점", "역만 32000점")
+//   - 역만(역만역 성립): 등급명만 ("역만 32000점", "2배 역만 64000점")
+//   - 그 외: "판 부" 먼저, 만관 이상이면 등급명을 덧붙임
+//     ("4판 30부 7700점", "5판 30부 만관 8000점", "13판 40부 헤아림 역만 32000점")
+//   부수·판수는 점수와 별개로 손패의 가치를 나타내는 정보이므로 역만 외에는 항상 표시.
 function scoreText(hule) {
     const label = rankLabel(hule);
-    const head = label ? label
-               : hule.fanshu ? `${hule.fanshu}판 ${hule.fu}부`
-               : '';
-    return (head ? head + ' ' : '') + `${hule.defen}점`;
+    if (hule.damanguan) {
+        return `${label} ${hule.defen}점`;
+    }
+    let head = `${hule.fanshu}판 ${hule.fu}부`;
+    if (label) head += ` ${label}`;
+    return `${head} ${hule.defen}점`;
 }
 
 module.exports = { yakuName, pingjuName, rankLabel, scoreText, FENG_KO };
